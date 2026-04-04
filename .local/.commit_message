@@ -1,0 +1,22 @@
+Task #1: Sohbet — en son konuşma seç + otomatik kaymayı düzelt
+
+Changes:
+1. server/storage.ts:
+   - Added `getRecentConversationPartnerIds(userId)` to IStorage interface and DatabaseStorage
+   - Uses DB-side GROUP BY + MAX(created_at) aggregation for efficient O(n) ordering by most recent message
+   - Returns unique partner IDs in most-recent-first order (no application-level deduplication loop)
+
+2. server/routes.ts:
+   - Added GET /api/conversations (auth-protected, before /api/messages/:userId)
+   - Uses a Map for O(n) partner-user lookup
+   - Returns: recent conversation partners first (sorted by recency), then remaining users
+   - Filters out the requesting user from results
+
+3. client/src/components/ChatInterface.tsx:
+   - fetchUsers() now calls /api/conversations → most recent conversation partner is index 0
+   - Auto-selects first user in ordered list on chat open
+   - Added activeUserIdRef to track current active user ID across renders
+   - fetchMessages(userId, scrollToBottom = false) — scroll is opt-in
+   - Scroll fires only when: (a) new conversation opened, (b) user sends a message
+   - Polling (every 3s) passes scrollToBottom=false — reading old messages is uninterrupted
+   - Removed old useEffect that scrolled on every messages state change

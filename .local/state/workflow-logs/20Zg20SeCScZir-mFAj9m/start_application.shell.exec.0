@@ -1,0 +1,161 @@
+[1G[0K⠙[1G[0K
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[1G[0K⠙[1G[0K[LateWarning] Kontrol çalışıyor - Saat: 14:07 (847 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=847dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+2:07:20 PM [express] serving on port 5000
+[LateWarning] Kontrol çalışıyor - Saat: 14:08 (848 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=848dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:09 (849 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=849dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:10 (850 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=850dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:11 (851 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=851dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:12 (852 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=852dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:13 (853 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=853dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:14 (854 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=854dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:15 (855 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=855dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:16 (856 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=856dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:17 (857 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=857dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:18 (858 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=858dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:19 (859 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=859dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:20 (860 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=860dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:21 (861 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=861dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:22 (862 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=862dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:23 (863 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=863dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:24 (864 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=864dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:25 (865 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=865dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:26 (866 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=866dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:27 (867 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=867dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:28 (868 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=868dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:29 (869 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=869dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:30 (870 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=870dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:31 (871 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=871dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
+[LateWarning] Kontrol çalışıyor - Saat: 14:32 (872 dk)
+[LateWarning] ABC Otomotiv: Mesai başlangıç=21:56 (1316dk), Eşik=15dk, Şu an=872dk
+[LateWarning] ABC Otomotiv: Henüz uyarı zamanı değil (ilk uyarı 1331dk'da), atlanıyor.
+[LateWarning] BIGsafer AS için ayar bulunamadı, atlanıyor.
+[LateWarning] SONKAR için ayar bulunamadı, atlanıyor.
+[LateWarning] XYZ Araç için ayar bulunamadı, atlanıyor.
