@@ -11,6 +11,16 @@ import path from "path";
 import fs from "fs";
 import pg from "pg";
 
+function isStrongPassword(password: string): boolean {
+  if (password.length < 10) {
+    return false;
+  }
+
+  const hasLetter = /[A-Za-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  return hasLetter && hasNumber;
+}
+
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -327,6 +337,12 @@ export async function registerRoutes(
   app.post("/api/company/users", requireAuth, requireManager, async (req: any, res) => {
     try {
       const manager = req.user as User;
+
+      if (!isStrongPassword(String(req.body.password || ""))) {
+        return res.status(400).json({
+          message: "Şifre en az 10 karakter olmalı ve en az 1 harf ile 1 rakam içermelidir",
+        });
+      }
       
       const rawCompanyId = manager.role === 'super_admin' ? req.body.companyId : manager.companyId;
       const companyId = rawCompanyId && rawCompanyId !== '' ? rawCompanyId : null;

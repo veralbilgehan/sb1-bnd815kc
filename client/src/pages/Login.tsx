@@ -156,7 +156,6 @@ export default function Login() {
           
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>Şifrenizi mi unuttunuz? Bilgi İşlem ile iletişime geçin.</p>
-            <p className="mt-2 text-xs">Test: calisan1 / yonetici1 - Şifre: 123456</p>
           </div>
         </CardContent>
       </Card>
