@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Lock, User, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { login } from "@/lib/auth";
 
@@ -155,7 +155,17 @@ export default function Login() {
           </Tabs>
           
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Şifrenizi mi unuttunuz? Bilgi İşlem ile iletişime geçin.</p>
+            <p className="mb-2">Şifrenizi mi unuttunuz?</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs"
+              onClick={() => setLocation("/reset-password")}
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              Şifre Sıfırlama Sayfasına Git
+            </Button>
+            <p className="mt-2 text-xs text-muted-foreground/70">Yöneticinizden sıfırlama bağlantısı isteyin.</p>
           </div>
         </CardContent>
       </Card>

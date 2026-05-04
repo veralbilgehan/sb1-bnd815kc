@@ -1,4 +1,5 @@
 import { storage } from "./storage";
+import type { InsertAnnouncement } from "../shared/schema";
 
 async function seed() {
   console.log("Starting database seed...");
@@ -164,6 +165,32 @@ async function seed() {
     console.log("ABC Otomotiv Çalışan: calisan1, calisan2 / 123456");
     console.log("XYZ Araç Yönetici: yonetici2 / 123456");
     console.log("XYZ Araç Çalışan: calisan3 / 123456");
+
+    // Create default Günaydın announcements for each company
+    const companySeedData = [
+      { id: company1Id, manager: "yonetici1" },
+      { id: company2Id, manager: "yonetici2" },
+    ];
+    for (const { id: cid, manager: mgrUsername } of companySeedData) {
+      if (!cid) continue;
+      const existingAnns = await storage.getAnnouncements(cid);
+      if (existingAnns.length === 0) {
+        const mgr = await storage.getUserByUsername(mgrUsername);
+        const ann: InsertAnnouncement = {
+          companyId: cid,
+          title: "Günaydın! 🌅",
+          content: "Günaydın sevgili ekip! Güzel bir gün dileriz. Hepinize başarılar! 💪",
+          scheduledTime: "08:00",
+          repeatType: "daily",
+          repeatCount: 0,
+          isActive: true,
+          imageUrl: null,
+          createdBy: mgr?.id ?? null,
+        };
+        await storage.createAnnouncement(ann);
+        console.log(`✓ Default günaydın announcement created for company ${cid}`);
+      }
+    }
     console.log("\nDatabase seed completed successfully!");
   } catch (error) {
     console.error("Error seeding database:", error);
