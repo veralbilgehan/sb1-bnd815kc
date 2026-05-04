@@ -33,7 +33,7 @@ export async function initializeServer(options?: {
   // Trust proxy headers from Vercel / reverse proxies
   app.set("trust proxy", 1);
 
-  // CORS: allow frontend origin with credentials
+  // CORS: allow same-origin, localhost dev, and optional FRONTEND_URL
   const allowedOrigins = [
     "http://localhost:5000",
     "http://localhost:5173",
@@ -42,8 +42,12 @@ export async function initializeServer(options?: {
   app.use(
     cors({
       origin: (origin, cb) => {
-        // Allow non-browser tools (curl, Postman) and listed origins
-        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        // Allow same-origin requests (no origin header) and listed origins
+        if (!origin) return cb(null, true);
+        // Allow any vercel.app subdomain for this project
+        if (origin.endsWith(".vercel.app") || allowedOrigins.includes(origin)) {
+          return cb(null, true);
+        }
         cb(new Error(`CORS not allowed for origin: ${origin}`));
       },
       credentials: true,
