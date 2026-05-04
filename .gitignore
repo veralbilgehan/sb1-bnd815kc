@@ -13,3 +13,8 @@ vite.config.ts.*
 .netlify
 
 .env*.local
+
+# Local agent/MCP skill folders
+.local/
+.agents.rar
+.local.rar
