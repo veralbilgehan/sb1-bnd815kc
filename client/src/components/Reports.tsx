@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar, Users, TrendingUp, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { User } from "@shared/schema";
+import type { User } from "@/lib/auth";
 
 interface ReportsProps {
   user: User;

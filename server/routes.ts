@@ -21,8 +21,9 @@ function isStrongPassword(password: string): boolean {
   return hasLetter && hasNumber;
 }
 
-// Configure multer for file uploads
-const uploadDir = path.join(process.cwd(), "uploads");
+// Vercel can only write to /tmp, local/server deployments can use project folder.
+const uploadBaseDir = process.env.VERCEL ? "/tmp" : process.cwd();
+const uploadDir = path.join(uploadBaseDir, "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -113,7 +114,7 @@ export async function registerRoutes(
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         sameSite: "lax",
@@ -1020,7 +1021,7 @@ export async function registerRoutes(
       }
 
       const allUsers = isManagerOrAdmin
-        ? await storage.getCompanyUsers(user.companyId)
+        ? await storage.getUsersByCompany(user.companyId)
         : [await storage.getUser(user.id)];
       const userMap: Record<string, any> = {};
       for (const u of allUsers) {
