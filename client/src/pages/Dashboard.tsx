@@ -67,10 +67,15 @@ export default function Dashboard() {
 
   const isSuperAdmin = user.role === 'super_admin';
   const isManager = user.role === 'manager' || isSuperAdmin;
+  const isChatTab = activeTab === "chat";
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden min-h-[85vh] flex flex-col">
+    <div className={isChatTab ? "min-h-screen bg-white" : "min-h-screen bg-slate-50/50 p-4 md:p-8"}>
+      <div
+        className={isChatTab
+          ? "w-full bg-white overflow-hidden min-h-screen flex flex-col"
+          : "max-w-7xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden min-h-[85vh] flex flex-col"}
+      >
         {/* Header */}
         <header className="bg-primary text-primary-foreground px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3">
           {/* Sol: Şirket adı + Kullanıcı yan yana */}
@@ -208,7 +213,7 @@ export default function Dashboard() {
         </nav>
 
         {/* Content */}
-        <main className="flex-1 p-6 bg-slate-50/30 overflow-y-auto">
+        <main className={isChatTab ? "flex-1 bg-white overflow-hidden" : "flex-1 p-6 bg-slate-50/30 overflow-y-auto"}>
           {activeTab === "performance" && <PerformanceView user={user} />}
           {activeTab === "chat" && <ChatInterface user={user} />}
           {activeTab === "reports" && <Reports user={user} />}

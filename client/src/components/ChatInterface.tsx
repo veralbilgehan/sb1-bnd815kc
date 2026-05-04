@@ -497,7 +497,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   // ─── Message input bar (shared) ───────────────────────────────────────────
 
   const renderInputBar = () => (
-    <div className="p-2 bg-white border-t shrink-0">
+    <div className="sticky bottom-0 z-10 border-t bg-white/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] backdrop-blur shrink-0">
       {selectedFile && (
         <div className="mb-2 px-2 py-2 bg-blue-50 rounded-lg flex items-center gap-2">
           {selectedFile.type.startsWith("image/") ? (
@@ -549,7 +549,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col md:flex-row h-[70vh] md:h-[500px] md:max-h-[70vh] border rounded-lg overflow-hidden bg-white shadow-sm relative">
+    <div className="flex h-full min-h-0 flex-col bg-white overflow-hidden relative md:flex-row md:min-h-[calc(100vh-9rem)]">
       <canvas ref={canvasRef} className="hidden" />
       <input
         id="chat-file-input"
@@ -658,7 +658,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       )}
 
       {/* Sidebar */}
-      <div className="w-full md:w-1/4 h-1/3 md:h-full bg-slate-50 border-b md:border-b-0 md:border-r flex flex-col shrink-0">
+      <div className="flex w-full max-h-[38vh] flex-col overflow-hidden border-b bg-slate-50 shrink-0 md:h-full md:max-h-none md:w-1/4 md:border-b-0 md:border-r">
         {/* Tabs */}
         <div className="flex border-b bg-white">
           <button
@@ -693,7 +693,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {activeTab === "kisiler" ? (
             <>
               {filteredUsers.map(chatUser => (
@@ -755,7 +755,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
       </div>
 
       {/* Main Chat Area */}
-      <div className="w-full md:w-3/4 h-2/3 md:h-full flex flex-col bg-white min-w-0">
+      <div className="flex min-h-0 w-full flex-1 flex-col bg-white min-w-0 md:w-3/4">
         {activeTab === "kisiler" ? (
           activeUser ? (
             <>
@@ -772,7 +772,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               </div>
 
               {/* Direct messages */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-slate-50/50 p-4">
                 {messages.map(msg => {
                   const isOwn = msg.senderId === user.id;
                   return (
@@ -823,7 +823,7 @@ export default function ChatInterface({ user }: ChatInterfaceProps) {
               </div>
 
               {/* Group messages */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-slate-50/50 p-4">
                 {groupMessages.map(msg => {
                   const isOwn = msg.senderId === user.id;
                   const sender = userMap.get(msg.senderId);
