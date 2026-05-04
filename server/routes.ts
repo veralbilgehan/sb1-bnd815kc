@@ -4,6 +4,8 @@ import { storage } from "./storage.js";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import passport from "passport";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { Strategy as LocalStrategy } from "passport-local";
 import { type User, insertUserSchema, insertShiftSchema, insertActivitySchema, insertMessageSchema, insertCompanySchema, insertActivityTypeSchema, insertSalesRecordSchema, insertCompanySettingsSchema, insertGroupSchema, insertGroupMessageSchema } from "../shared/schema.js";
 import multer from "multer";
@@ -69,8 +71,15 @@ passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
-        return done(null, false, { message: "Kullanıcı adı veya şifre hatalı" });
+      if (!user) return done(null, false, { message: "Kullanıcı adı veya şifre hatalı" });
+      const match = user.password.startsWith("$2") 
+        ? await bcrypt.compare(password, user.password)
+        : user.password === password; // legacy plain-text (will be hashed on next login)
+      if (!match) return done(null, false, { message: "Kullanıcı adı veya şifre hatalı" });
+      // Opportunistically upgrade plain-text password to bcrypt
+      if (!user.password.startsWith("$2")) {
+        const hashed = await bcrypt.hash(password, 12);
+        await storage.updateUser(user.id, { password: hashed });
       }
       return done(null, user);
     } catch (err) {
@@ -117,7 +126,7 @@ export async function registerRoutes(
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       },
     })
   );
@@ -203,6 +212,83 @@ export async function registerRoutes(
         name: company.name,
       } : null
     });
+  });
+
+  // Change password (authenticated user changes their own password)
+  app.post("/api/auth/change-password", requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user as User;
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Mevcut şifre ve yeni şifre gereklidir" });
+      }
+      if (!isStrongPassword(newPassword)) {
+        return res.status(400).json({ message: "Şifre en az 10 karakter olmalı ve en az 1 harf ile 1 rakam içermelidir" });
+      }
+      const dbUser = await storage.getUser(user.id);
+      if (!dbUser) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+      const match = dbUser.password.startsWith("$2")
+        ? await bcrypt.compare(currentPassword, dbUser.password)
+        : dbUser.password === currentPassword;
+      if (!match) return res.status(401).json({ message: "Mevcut şifre hatalı" });
+      const hashed = await bcrypt.hash(newPassword, 12);
+      await storage.updateUser(user.id, { password: hashed });
+      res.json({ message: "Şifre güncellendi" });
+    } catch (err) {
+      console.error("change-password error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // Request password reset token (manager/superadmin resets a user's password)
+  app.post("/api/auth/request-reset", requireAuth, async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!['super_admin', 'manager'].includes(actor.role)) {
+        return res.status(403).json({ message: "Yetkisiz" });
+      }
+      const { username } = req.body;
+      if (!username) return res.status(400).json({ message: "Kullanıcı adı gerekli" });
+      const targetUser = await storage.getUserByUsername(username);
+      if (!targetUser) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+      // Manager can only reset employees in their own company
+      if (actor.role === 'manager' && targetUser.companyId !== actor.companyId) {
+        return res.status(403).json({ message: "Başka şirketin kullanıcısını sıfırlayamazsınız" });
+      }
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await storage.createPasswordResetToken(targetUser.id, token, expiresAt);
+      res.json({ token, message: "Sıfırlama tokeni oluşturuldu" });
+    } catch (err) {
+      console.error("request-reset error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // Reset password using a token
+  app.post("/api/auth/reset-password", async (req: any, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: "Token ve yeni şifre gereklidir" });
+      }
+      if (!isStrongPassword(newPassword)) {
+        return res.status(400).json({ message: "Şifre en az 10 karakter olmalı ve en az 1 harf ile 1 rakam içermelidir" });
+      }
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken) return res.status(400).json({ message: "Geçersiz token" });
+      if (resetToken.usedAt) return res.status(400).json({ message: "Bu token zaten kullanıldı" });
+      if (new Date() > new Date(resetToken.expiresAt)) {
+        return res.status(400).json({ message: "Token süresi dolmuş" });
+      }
+      const hashed = await bcrypt.hash(newPassword, 12);
+      await storage.updateUser(resetToken.userId, { password: hashed });
+      await storage.markPasswordResetTokenUsed(resetToken.id);
+      res.json({ message: "Şifre sıfırlandı" });
+    } catch (err) {
+      console.error("reset-password error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
   });
 
   // Role-based middleware
@@ -350,7 +436,7 @@ export async function registerRoutes(
 
       const parsed = insertUserSchema.safeParse({
         username: req.body.username,
-        password: req.body.password,
+        password: await bcrypt.hash(req.body.password, 12),
         fullName: req.body.fullName,
         role: req.body.role || 'employee',
         department: req.body.department || null,

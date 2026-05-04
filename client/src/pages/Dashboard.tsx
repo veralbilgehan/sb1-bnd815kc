@@ -8,16 +8,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Activity, MessageSquare, Settings, Users, Building2, Menu, BarChart2 } from "lucide-react";
+import { LogOut, Activity, MessageSquare, Settings, Users, Building2, Menu, BarChart2, KeyRound } from "lucide-react";
 import PerformanceView from "@/components/PerformanceView";
 import ChatInterface from "@/components/ChatInterface";
 import UserManagement from "@/components/UserManagement";
 import CompanyManagement from "@/components/CompanyManagement";
 import ActivitySettings from "@/components/ActivitySettings";
 import Reports from "@/components/Reports";
+import ChangePassword from "@/components/ChangePassword";
 import { getCurrentUser, getCurrentCompany, logout, type User, type Company } from "@/lib/auth";
 
-type TabType = "performance" | "chat" | "users" | "settings" | "companies" | "reports";
+type TabType = "performance" | "chat" | "users" | "settings" | "companies" | "reports" | "password";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -169,6 +170,12 @@ export default function Dashboard() {
                   </DropdownMenuItem>
                 </>
               )}
+              <DropdownMenuItem
+                onClick={() => setActiveTab("password")}
+                className={activeTab === "password" ? "bg-blue-50 text-primary" : ""}
+              >
+                <KeyRound className="h-4 w-4 mr-2" /> Şifre Değiştir
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleLogout}
@@ -188,6 +195,7 @@ export default function Dashboard() {
             {activeTab === "users" && <><Users className="h-4 w-4 mr-2 text-primary" /> Kullanıcılar</>}
             {activeTab === "companies" && <><Building2 className="h-4 w-4 mr-2 text-primary" /> Şirketler</>}
             {activeTab === "settings" && <><Settings className="h-4 w-4 mr-2 text-primary" /> Ayarlar</>}
+            {activeTab === "password" && <><KeyRound className="h-4 w-4 mr-2 text-primary" /> Şifre Değiştir</>}
           </div>
         </nav>
 
@@ -199,6 +207,7 @@ export default function Dashboard() {
           {activeTab === "users" && isManager && <UserManagement user={user} />}
           {activeTab === "companies" && isSuperAdmin && <CompanyManagement user={user} />}
           {activeTab === "settings" && isManager && <ActivitySettings user={user} />}
+          {activeTab === "password" && <ChangePassword />}
         </main>
       </div>
     </div>

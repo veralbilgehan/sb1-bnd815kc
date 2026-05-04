@@ -1,3 +1,7 @@
+// When the frontend is served from a different origin than the API,
+// set VITE_API_URL to the backend base URL (e.g. https://html-lang-tr-backend.vercel.app)
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
 export interface Company {
   id: string;
   name: string;
@@ -19,7 +23,7 @@ export interface AuthState {
 }
 
 export async function login(username: string, password: string): Promise<AuthState> {
-  const response = await fetch("/api/auth/login", {
+  const response = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -40,7 +44,7 @@ export async function login(username: string, password: string): Promise<AuthSta
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/api/auth/logout", {
+  await fetch(`${API_BASE}/api/auth/logout`, {
     method: "POST",
     credentials: "include",
   });
@@ -60,7 +64,7 @@ export function getCurrentCompany(): Company | null {
 
 export async function checkAuth(): Promise<AuthState | null> {
   try {
-    const response = await fetch("/api/auth/me", {
+    const response = await fetch(`${API_BASE}/api/auth/me`, {
       credentials: "include",
     });
 
@@ -81,4 +85,44 @@ export async function checkAuth(): Promise<AuthState | null> {
     localStorage.removeItem("company");
     return null;
   }
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword, newPassword }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Sifre degistirilemedi");
+  }
+}
+
+export async function resetPasswordWithToken(token: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Sifre sifirlanamadi");
+  }
+}
+
+export async function requestPasswordReset(username: string): Promise<{ token: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/request-reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Sifirlama baslatilamadi");
+  }
+  return res.json();
 }

@@ -11,3 +11,5 @@ vite.config.ts.*
 
 # Local Netlify folder
 .netlify
+
+.env*.local

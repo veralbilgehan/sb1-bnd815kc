@@ -1,4 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from "express";
+import cors from "cors";
 import { createServer } from "http";
 import { registerRoutes } from "./routes.js";
 import { serveStatic } from "./static.js";
@@ -28,6 +29,26 @@ export async function initializeServer(options?: {
   const httpServer = createServer(app);
   const serveClient = options?.serveClient ?? false;
   const enableVite = options?.enableVite ?? false;
+
+  // Trust proxy headers from Vercel / reverse proxies
+  app.set("trust proxy", 1);
+
+  // CORS: allow frontend origin with credentials
+  const allowedOrigins = [
+    "http://localhost:5000",
+    "http://localhost:5173",
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ];
+  app.use(
+    cors({
+      origin: (origin, cb) => {
+        // Allow non-browser tools (curl, Postman) and listed origins
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        cb(new Error(`CORS not allowed for origin: ${origin}`));
+      },
+      credentials: true,
+    })
+  );
 
   app.use(
     express.json({

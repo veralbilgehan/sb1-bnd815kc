@@ -1,6 +1,6 @@
 import { 
   users, shifts, activities, messages, companies, activityTypes, salesRecords, companySettings,
-  groups, groupMembers, groupMessages,
+  groups, groupMembers, groupMessages, passwordResetTokens,
   type User, type InsertUser,
   type Shift, type InsertShift,
   type Activity, type InsertActivity,
@@ -12,6 +12,7 @@ import {
   type Group, type InsertGroup,
   type GroupMember,
   type GroupMessage, type InsertGroupMessage,
+  type PasswordResetToken,
 } from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, or, desc, isNull, inArray, gte } from "drizzle-orm";
@@ -81,6 +82,11 @@ export interface IStorage {
   createGroupMessage(msg: InsertGroupMessage): Promise<GroupMessage>;
   getGroupMessages(groupId: string): Promise<GroupMessage[]>;
   deleteGroup(id: string): Promise<void>;
+
+  // Password Reset Tokens
+  createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenUsed(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -442,6 +448,21 @@ export class DatabaseStorage implements IStorage {
     await db.delete(groupMessages).where(eq(groupMessages.groupId, id));
     await db.delete(groupMembers).where(eq(groupMembers.groupId, id));
     await db.delete(groups).where(eq(groups.id, id));
+  }
+
+  // Password Reset Tokens
+  async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
+    const [row] = await db.insert(passwordResetTokens).values({ userId, token, expiresAt }).returning();
+    return row;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [row] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    return row || undefined;
+  }
+
+  async markPasswordResetTokenUsed(id: string): Promise<void> {
+    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, id));
   }
 }
 
