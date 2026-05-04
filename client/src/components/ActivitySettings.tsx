@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, Clock, Bell, Save, Loader2, Send, Info } from "lucide-react";
+import { Settings, Clock, Bell, Save, Loader2, Send, Info, Megaphone, Plus, Pencil, Trash2, ImageIcon, ToggleLeft, ToggleRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { type User } from "@/lib/auth";
+import { type User, API_BASE } from "@/lib/auth";
 
 interface CompanySettings {
   id: string;
@@ -20,6 +20,21 @@ interface CompanySettings {
   lateWarning3: string;
 }
 
+interface Announcement {
+  id: string;
+  companyId: string;
+  title: string;
+  content: string;
+  imageUrl: string | null;
+  scheduledTime: string;
+  repeatType: string;
+  repeatCount: number;
+  isActive: boolean;
+  sentCount: number;
+  lastSentAt: string | null;
+  createdAt: string;
+}
+
 interface ActivitySettingsProps {
   user: User;
 }
@@ -27,6 +42,23 @@ interface ActivitySettingsProps {
 export default function ActivitySettings({ user }: ActivitySettingsProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // ─── Announcement form state ───────────────────────────────────────────────
+  const defaultAnnForm = {
+    title: "",
+    content: "",
+    scheduledTime: "08:00",
+    repeatType: "daily",
+    repeatCount: 0,
+    isActive: true,
+    imageUrl: "",
+  };
+  const [annForm, setAnnForm] = useState(defaultAnnForm);
+  const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
+  const [annImageFile, setAnnImageFile] = useState<File | null>(null);
+  const [annImagePreview, setAnnImagePreview] = useState<string | null>(null);
+  const [showAnnForm, setShowAnnForm] = useState(false);
 
   const [form, setForm] = useState({
     shiftStartTime: "09:00",
@@ -40,10 +72,58 @@ export default function ActivitySettings({ user }: ActivitySettingsProps) {
   const { data, isLoading } = useQuery<{ settings: CompanySettings | null }>({
     queryKey: ["company-settings"],
     queryFn: async () => {
-      const response = await fetch("/api/company/settings", { credentials: "include" });
+      const response = await fetch(`${API_BASE}/api/company/settings`, { credentials: "include" });
       if (!response.ok) throw new Error("Ayarlar yüklenemedi");
       return response.json();
     },
+  });
+
+  const { data: announcements = [] } = useQuery<Announcement[]>({
+    queryKey: ["announcements"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/announcements`, { credentials: "include" });
+      if (!res.ok) throw new Error("Duyurular yüklenemedi");
+      return res.json();
+    },
+  });
+
+  const createAnnMutation = useMutation({
+    mutationFn: async (fd: FormData) => {
+      const res = await fetch(`${API_BASE}/api/announcements`, { method: "POST", body: fd, credentials: "include" });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Hata"); }
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["announcements"] }); setShowAnnForm(false); setAnnForm(defaultAnnForm); setAnnImageFile(null); setAnnImagePreview(null); toast({ title: "Duyuru oluşturuldu" }); },
+    onError: (e: Error) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+  });
+
+  const updateAnnMutation = useMutation({
+    mutationFn: async ({ id, fd }: { id: string; fd: FormData }) => {
+      const res = await fetch(`${API_BASE}/api/announcements/${id}`, { method: "PUT", body: fd, credentials: "include" });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Hata"); }
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["announcements"] }); setShowAnnForm(false); setEditingAnnId(null); setAnnForm(defaultAnnForm); setAnnImageFile(null); setAnnImagePreview(null); toast({ title: "Duyuru güncellendi" }); },
+    onError: (e: Error) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteAnnMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`${API_BASE}/api/announcements/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) throw new Error("Silinemedi");
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["announcements"] }); toast({ title: "Duyuru silindi" }); },
+    onError: (e: Error) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
+  });
+
+  const sendAnnMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`${API_BASE}/api/announcements/${id}/send`, { method: "POST", credentials: "include" });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.message || "Hata"); }
+      return res.json();
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["announcements"] }); toast({ title: "Duyuru gönderildi", description: "Tüm çalışanlara mesaj olarak iletildi." }); },
+    onError: (e: Error) => toast({ title: "Hata", description: e.message, variant: "destructive" }),
   });
 
   useEffect(() => {
@@ -62,7 +142,7 @@ export default function ActivitySettings({ user }: ActivitySettingsProps) {
 
   const saveMutation = useMutation({
     mutationFn: async (formData: typeof form) => {
-      const response = await fetch("/api/company/settings", {
+      const response = await fetch(`${API_BASE}/api/company/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -85,7 +165,7 @@ export default function ActivitySettings({ user }: ActivitySettingsProps) {
 
   const testWarningMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/company/test-warning", {
+      const response = await fetch(`${API_BASE}/api/company/test-warning`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -135,6 +215,41 @@ export default function ActivitySettings({ user }: ActivitySettingsProps) {
   };
 
   const warningInfo = getNextWarningInfo();
+
+  function handleAnnImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAnnImageFile(file);
+    setAnnImagePreview(URL.createObjectURL(file));
+  }
+
+  function startEditAnn(ann: Announcement) {
+    setEditingAnnId(ann.id);
+    setAnnForm({ title: ann.title, content: ann.content, scheduledTime: ann.scheduledTime, repeatType: ann.repeatType, repeatCount: ann.repeatCount, isActive: ann.isActive, imageUrl: ann.imageUrl ?? "" });
+    setAnnImageFile(null);
+    setAnnImagePreview(ann.imageUrl ?? null);
+    setShowAnnForm(true);
+  }
+
+  function buildAnnFormData() {
+    const fd = new FormData();
+    const data = { title: annForm.title, content: annForm.content, scheduledTime: annForm.scheduledTime, repeatType: annForm.repeatType, repeatCount: Number(annForm.repeatCount), isActive: annForm.isActive, imageUrl: annForm.imageUrl || null };
+    if (annImageFile) {
+      fd.append("image", annImageFile);
+      fd.append("data", JSON.stringify({ ...data, imageUrl: undefined }));
+    } else {
+      Object.entries(data).forEach(([k, v]) => fd.append(k, String(v ?? "")));
+    }
+    return fd;
+  }
+
+  function handleAnnSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!annForm.title.trim() || !annForm.content.trim()) { toast({ title: "Hata", description: "Başlık ve içerik zorunlu", variant: "destructive" }); return; }
+    const fd = buildAnnFormData();
+    if (editingAnnId) { updateAnnMutation.mutate({ id: editingAnnId, fd }); }
+    else { createAnnMutation.mutate(fd); }
+  }
 
   if (isLoading) {
     return (
@@ -327,6 +442,139 @@ export default function ActivitySettings({ user }: ActivitySettingsProps) {
             <><Send className="h-4 w-4" />Test Uyarısı Gönder</>
           )}
         </Button>
+      </div>
+
+      {/* ── Announcements Section ─────────────────────────────────────────── */}
+      <div className="pt-4 border-t">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-primary" />
+              Toplu Mesaj ve Duyurular
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">Zamanlı mesajlar oluşturun, tüm çalışanlara otomatik gönderilsin.</p>
+          </div>
+          <Button size="sm" className="gap-1" onClick={() => { setShowAnnForm(true); setEditingAnnId(null); setAnnForm(defaultAnnForm); setAnnImageFile(null); setAnnImagePreview(null); }}>
+            <Plus className="h-4 w-4" /> Yeni Duyuru
+          </Button>
+        </div>
+
+        {/* Form */}
+        {showAnnForm && (
+          <Card className="mb-4 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{editingAnnId ? "Duyuruyu Düzenle" : "Yeni Duyuru"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAnnSubmit} className="space-y-3">
+                <div>
+                  <Label>Başlık</Label>
+                  <Input value={annForm.title} onChange={e => setAnnForm(f => ({ ...f, title: e.target.value }))} placeholder="Günaydın!" required />
+                </div>
+                <div>
+                  <Label>İçerik</Label>
+                  <Textarea value={annForm.content} onChange={e => setAnnForm(f => ({ ...f, content: e.target.value }))} placeholder="Mesaj içeriği..." rows={3} required />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Gönderim Saati</Label>
+                    <Input type="time" value={annForm.scheduledTime} onChange={e => setAnnForm(f => ({ ...f, scheduledTime: e.target.value }))} />
+                  </div>
+                  <div>
+                    <Label>Tekrar</Label>
+                    <select className="w-full border rounded-md px-3 py-2 text-sm bg-background" value={annForm.repeatType} onChange={e => setAnnForm(f => ({ ...f, repeatType: e.target.value }))}>
+                      <option value="daily">Her gün</option>
+                      <option value="weekly">Her hafta</option>
+                      <option value="once">Tek seferlik</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Gönderim Sayısı <span className="text-muted-foreground text-xs">(0 = sınırsız)</span></Label>
+                  <Input type="number" min={0} value={annForm.repeatCount} onChange={e => setAnnForm(f => ({ ...f, repeatCount: Number(e.target.value) }))} />
+                </div>
+
+                {/* Image */}
+                <div>
+                  <Label>Görsel</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => imageInputRef.current?.click()}>
+                      <ImageIcon className="h-4 w-4" /> Görsel Seç
+                    </Button>
+                    {annImagePreview && <img src={annImagePreview} alt="preview" className="h-10 w-10 rounded object-cover border" />}
+                    {(annImageFile || annImagePreview) && (
+                      <Button type="button" variant="ghost" size="sm" className="text-red-500" onClick={() => { setAnnImageFile(null); setAnnImagePreview(null); setAnnForm(f => ({ ...f, imageUrl: "" })); }}>Kaldır</Button>
+                    )}
+                  </div>
+                  <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleAnnImageChange} />
+                  {!annImageFile && !annImagePreview && (
+                    <p className="text-xs text-muted-foreground mt-1">Varsayılan: yüklenen resim. Boş bırakılırsa yalnızca metin gönderilir.</p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setAnnForm(f => ({ ...f, isActive: !f.isActive }))} className="text-primary">
+                    {annForm.isActive ? <ToggleRight className="h-6 w-6" /> : <ToggleLeft className="h-6 w-6 text-muted-foreground" />}
+                  </button>
+                  <span className="text-sm">{annForm.isActive ? "Aktif — otomatik gönderilecek" : "Pasif"}</span>
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button type="submit" disabled={createAnnMutation.isPending || updateAnnMutation.isPending} className="gap-1">
+                    {(createAnnMutation.isPending || updateAnnMutation.isPending) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {editingAnnId ? "Güncelle" : "Kaydet"}
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => { setShowAnnForm(false); setEditingAnnId(null); }}>İptal</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* List */}
+        {announcements.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">Henüz duyuru yok. "Yeni Duyuru" ile ekleyin.</p>
+        ) : (
+          <div className="space-y-2">
+            {announcements.map((ann) => (
+              <Card key={ann.id} className={ann.isActive ? "" : "opacity-60"}>
+                <CardContent className="py-3 px-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex gap-3 min-w-0">
+                      {ann.imageUrl && <img src={ann.imageUrl} alt="" className="h-10 w-10 rounded object-cover border shrink-0" />}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{ann.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{ann.content}</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground">
+                          <span>⏰ {ann.scheduledTime}</span>
+                          <span>🔁 {ann.repeatType === "daily" ? "Her gün" : ann.repeatType === "weekly" ? "Her hafta" : "Tek seferlik"}</span>
+                          {ann.repeatCount > 0 && <span>×{ann.repeatCount}</span>}
+                          <span>📤 {ann.sentCount} gönderildi</span>
+                          <span className={ann.isActive ? "text-green-600 font-medium" : "text-red-500"}>
+                            {ann.isActive ? "Aktif" : "Pasif"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" title="Hemen Gönder" onClick={() => sendAnnMutation.mutate(ann.id)} disabled={sendAnnMutation.isPending}>
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEditAnn(ann)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500" onClick={() => { if (confirm("Bu duyuruyu silmek istiyor musunuz?")) deleteAnnMutation.mutate(ann.id); }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

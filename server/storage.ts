@@ -1,6 +1,6 @@
 import { 
   users, shifts, activities, messages, companies, activityTypes, salesRecords, companySettings,
-  groups, groupMembers, groupMessages, passwordResetTokens,
+  groups, groupMembers, groupMessages, passwordResetTokens, announcements,
   type User, type InsertUser,
   type Shift, type InsertShift,
   type Activity, type InsertActivity,
@@ -13,6 +13,7 @@ import {
   type GroupMember,
   type GroupMessage, type InsertGroupMessage,
   type PasswordResetToken,
+  type Announcement, type InsertAnnouncement,
 } from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq, and, or, desc, isNull, inArray, gte } from "drizzle-orm";
@@ -87,6 +88,15 @@ export interface IStorage {
   createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(id: string): Promise<void>;
+
+  // Announcements
+  getAnnouncements(companyId: string): Promise<Announcement[]>;
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  createAnnouncement(data: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, updates: Partial<Announcement>): Promise<Announcement | undefined>;
+  deleteAnnouncement(id: string): Promise<void>;
+  getActiveAnnouncementsForSending(): Promise<Announcement[]>;
+  incrementAnnouncementSentCount(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -463,6 +473,48 @@ export class DatabaseStorage implements IStorage {
 
   async markPasswordResetTokenUsed(id: string): Promise<void> {
     await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, id));
+  }
+
+  // Announcements
+  async getAnnouncements(companyId: string): Promise<Announcement[]> {
+    return await db.select().from(announcements).where(eq(announcements.companyId, companyId)).orderBy(desc(announcements.createdAt));
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const [row] = await db.select().from(announcements).where(eq(announcements.id, id));
+    return row || undefined;
+  }
+
+  async createAnnouncement(data: InsertAnnouncement): Promise<Announcement> {
+    const [row] = await db.insert(announcements).values(data).returning();
+    return row;
+  }
+
+  async updateAnnouncement(id: string, updates: Partial<Announcement>): Promise<Announcement | undefined> {
+    const [row] = await db.update(announcements).set({ ...updates, updatedAt: new Date() }).where(eq(announcements.id, id)).returning();
+    return row || undefined;
+  }
+
+  async deleteAnnouncement(id: string): Promise<void> {
+    await db.delete(announcements).where(eq(announcements.id, id));
+  }
+
+  async getActiveAnnouncementsForSending(): Promise<Announcement[]> {
+    return await db.select().from(announcements).where(eq(announcements.isActive, true));
+  }
+
+  async incrementAnnouncementSentCount(id: string): Promise<void> {
+    const ann = await this.getAnnouncement(id);
+    if (!ann) return;
+    const newCount = ann.sentCount + 1;
+    // Deactivate if repeatCount reached (0 = unlimited)
+    const shouldDeactivate = ann.repeatCount > 0 && newCount >= ann.repeatCount;
+    await db.update(announcements).set({
+      sentCount: newCount,
+      lastSentAt: new Date(),
+      isActive: shouldDeactivate ? false : ann.isActive,
+      updatedAt: new Date(),
+    }).where(eq(announcements.id, id));
   }
 }
 

@@ -7,7 +7,7 @@ import passport from "passport";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Strategy as LocalStrategy } from "passport-local";
-import { type User, insertUserSchema, insertShiftSchema, insertActivitySchema, insertMessageSchema, insertCompanySchema, insertActivityTypeSchema, insertSalesRecordSchema, insertCompanySettingsSchema, insertGroupSchema, insertGroupMessageSchema } from "../shared/schema.js";
+import { type User, insertUserSchema, insertShiftSchema, insertActivitySchema, insertMessageSchema, insertCompanySchema, insertActivityTypeSchema, insertSalesRecordSchema, insertCompanySettingsSchema, insertGroupSchema, insertGroupMessageSchema, insertAnnouncementSchema } from "../shared/schema.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -1349,5 +1349,159 @@ export async function registerRoutes(
     }
   });
 
+  // ── Announcements ──────────────────────────────────────────────────
+
+  // GET all announcements for current user's company
+  app.get("/api/announcements", requireAuth, async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!actor.companyId) return res.status(403).json({ message: "Şirket bulunamadı" });
+      const rows = await storage.getAnnouncements(actor.companyId);
+      res.json(rows);
+    } catch (err) {
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // POST create announcement (manager/super_admin)
+  app.post("/api/announcements", requireAuth, upload.single("image"), async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!['super_admin', 'manager'].includes(actor.role)) {
+        return res.status(403).json({ message: "Yetkisiz" });
+      }
+      if (!actor.companyId) return res.status(400).json({ message: "Şirket bulunamadı" });
+      const body = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body;
+      const parsed = insertAnnouncementSchema.safeParse({
+        ...body,
+        companyId: actor.companyId,
+        createdBy: actor.id,
+        imageUrl: req.file ? `/uploads/${req.file.filename}` : (body.imageUrl ?? null),
+      });
+      if (!parsed.success) return res.status(400).json({ message: parsed.error.issues[0]?.message });
+      const ann = await storage.createAnnouncement(parsed.data);
+      res.status(201).json(ann);
+    } catch (err) {
+      console.error("create announcement error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // PUT update announcement
+  app.put("/api/announcements/:id", requireAuth, upload.single("image"), async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!['super_admin', 'manager'].includes(actor.role)) {
+        return res.status(403).json({ message: "Yetkisiz" });
+      }
+      const ann = await storage.getAnnouncement(req.params.id);
+      if (!ann) return res.status(404).json({ message: "Duyuru bulunamadı" });
+      if (ann.companyId !== actor.companyId) return res.status(403).json({ message: "Yetkisiz" });
+      const body = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body;
+      const updates: any = { ...body };
+      if (req.file) updates.imageUrl = `/uploads/${req.file.filename}`;
+      delete updates.id; delete updates.companyId; delete updates.createdAt; delete updates.sentCount;
+      const updated = await storage.updateAnnouncement(req.params.id, updates);
+      res.json(updated);
+    } catch (err) {
+      console.error("update announcement error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // DELETE announcement
+  app.delete("/api/announcements/:id", requireAuth, async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!['super_admin', 'manager'].includes(actor.role)) {
+        return res.status(403).json({ message: "Yetkisiz" });
+      }
+      const ann = await storage.getAnnouncement(req.params.id);
+      if (!ann) return res.status(404).json({ message: "Duyuru bulunamadı" });
+      if (ann.companyId !== actor.companyId) return res.status(403).json({ message: "Yetkisiz" });
+      await storage.deleteAnnouncement(req.params.id);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // POST manually send announcement to all company users (creates a message from system)
+  app.post("/api/announcements/:id/send", requireAuth, async (req: any, res) => {
+    try {
+      const actor = req.user as User;
+      if (!['super_admin', 'manager'].includes(actor.role)) {
+        return res.status(403).json({ message: "Yetkisiz" });
+      }
+      const ann = await storage.getAnnouncement(req.params.id);
+      if (!ann) return res.status(404).json({ message: "Duyuru bulunamadı" });
+      if (ann.companyId !== actor.companyId) return res.status(403).json({ message: "Yetkisiz" });
+      await sendAnnouncementToCompany(ann);
+      res.json({ ok: true, message: "Duyuru gönderildi" });
+    } catch (err) {
+      console.error("send announcement error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
+  // GET cron endpoint — called by Vercel cron every minute; sends due announcements
+  app.get("/api/cron/announcements", async (req: any, res) => {
+    const secret = req.headers["x-cron-secret"] ?? req.query.secret;
+    if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    try {
+      const sent = await processDueAnnouncements();
+      res.json({ ok: true, sent });
+    } catch (err) {
+      console.error("cron error:", err);
+      res.status(500).json({ message: "Sunucu hatası" });
+    }
+  });
+
   return httpServer;
+}
+
+// ── Announcement helpers ────────────────────────────────────────────
+
+async function sendAnnouncementToCompany(ann: { id: string; companyId: string; title: string; content: string; imageUrl: string | null; createdBy: string | null }) {
+  const users = await storage.getUsersByCompany(ann.companyId);
+  const senderId = ann.createdBy ?? users.find(u => u.role === 'manager')?.id ?? users[0]?.id;
+  if (!senderId) return;
+  const text = `📢 ${ann.title}\n\n${ann.content}`;
+  for (const user of users) {
+    if (user.id === senderId) continue;
+    await storage.createMessage({
+      senderId,
+      recipientId: user.id,
+      companyId: ann.companyId,
+      content: text,
+      fileUrl: ann.imageUrl ?? null,
+      fileName: ann.imageUrl ? "duyuru-gorsel.jpg" : null,
+      fileSize: null,
+      fileType: ann.imageUrl ? "image/jpeg" : null,
+    });
+  }
+  await storage.incrementAnnouncementSentCount(ann.id);
+}
+
+async function processDueAnnouncements(): Promise<number> {
+  const active = await storage.getActiveAnnouncementsForSending();
+  const nowTR = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
+  const currentTime = `${String(nowTR.getHours()).padStart(2, '0')}:${String(nowTR.getMinutes()).padStart(2, '0')}`;
+  let sent = 0;
+  for (const ann of active) {
+    if (ann.scheduledTime !== currentTime) continue;
+    // Check if already sent today
+    if (ann.lastSentAt) {
+      const lastTR = new Date(new Date(ann.lastSentAt).toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
+      const sameDay = lastTR.getFullYear() === nowTR.getFullYear() &&
+        lastTR.getMonth() === nowTR.getMonth() &&
+        lastTR.getDate() === nowTR.getDate();
+      if (sameDay) continue;
+    }
+    await sendAnnouncementToCompany(ann);
+    sent++;
+  }
+  return sent;
 }
