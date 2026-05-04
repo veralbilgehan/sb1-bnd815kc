@@ -12,8 +12,8 @@ import {
   type Group, type InsertGroup,
   type GroupMember,
   type GroupMessage, type InsertGroupMessage,
-} from "@shared/schema";
-import { db } from "./db";
+} from "../shared/schema.js";
+import { db } from "./db.js";
 import { eq, and, or, desc, isNull, inArray, gte } from "drizzle-orm";
 
 export interface IStorage {

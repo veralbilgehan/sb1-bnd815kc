@@ -1,4 +1,4 @@
-import { initializeServer, log } from "./app";
+import { initializeServer, log } from "./app.js";
 
 (async () => {
   const { httpServer } = await initializeServer({
