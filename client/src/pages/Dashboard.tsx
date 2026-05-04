@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Activity, MessageSquare, Settings, Users, Building2, Menu, BarChart2, KeyRound } from "lucide-react";
+import { LogOut, Activity, MessageSquare, Settings, Users, Building2, Menu, BarChart2, KeyRound, RefreshCw } from "lucide-react";
 import PerformanceView from "@/components/PerformanceView";
 import ChatInterface from "@/components/ChatInterface";
 import UserManagement from "@/components/UserManagement";
@@ -16,9 +16,10 @@ import CompanyManagement from "@/components/CompanyManagement";
 import ActivitySettings from "@/components/ActivitySettings";
 import Reports from "@/components/Reports";
 import ChangePassword from "@/components/ChangePassword";
+import ResetUserPassword from "@/components/ResetUserPassword";
 import { getCurrentUser, getCurrentCompany, logout, type User, type Company } from "@/lib/auth";
 
-type TabType = "performance" | "chat" | "users" | "settings" | "companies" | "reports" | "password";
+type TabType = "performance" | "chat" | "users" | "settings" | "companies" | "reports" | "password" | "resetPassword";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -168,6 +169,12 @@ export default function Dashboard() {
                   >
                     <Settings className="h-4 w-4 mr-2" /> Ayarlar
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setActiveTab("resetPassword")}
+                    className={activeTab === "resetPassword" ? "bg-blue-50 text-primary" : ""}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" /> Şifre Sıfırla
+                  </DropdownMenuItem>
                 </>
               )}
               <DropdownMenuItem
@@ -196,6 +203,7 @@ export default function Dashboard() {
             {activeTab === "companies" && <><Building2 className="h-4 w-4 mr-2 text-primary" /> Şirketler</>}
             {activeTab === "settings" && <><Settings className="h-4 w-4 mr-2 text-primary" /> Ayarlar</>}
             {activeTab === "password" && <><KeyRound className="h-4 w-4 mr-2 text-primary" /> Şifre Değiştir</>}
+            {activeTab === "resetPassword" && <><RefreshCw className="h-4 w-4 mr-2 text-primary" /> Şifre Sıfırla</>}
           </div>
         </nav>
 
@@ -208,6 +216,7 @@ export default function Dashboard() {
           {activeTab === "companies" && isSuperAdmin && <CompanyManagement user={user} />}
           {activeTab === "settings" && isManager && <ActivitySettings user={user} />}
           {activeTab === "password" && <ChangePassword />}
+          {activeTab === "resetPassword" && isManager && <ResetUserPassword user={user} />}
         </main>
       </div>
     </div>
